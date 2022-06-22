@@ -19,7 +19,7 @@ void Display_Init()
 		lcd[i]->begin(DISPLAY_COLS, 2);      // 初始化 LCD，一行 16 的字元，共 2 行，預設開啟背光
 		lcd[i]->backlight();
 		delay(100);
-		cmd_port->println("LCD ptr" + String(i) + ": " + String((uint32_t) lcd[i]));
+		//cmd_port->println("LCD ptr" + String(i) + ": " + String((uint32_t) lcd[i]));
 	}
 }
 
@@ -32,7 +32,7 @@ void Display(uint8_t lr, uint8_t x, uint8_t y, String str)
 
 void Display(uint8_t lr, uint8_t x, uint8_t y, char *str) 
 {
-	cmd_port->println("LR: " + String(lr) + ", (" + String(x) + ", " + String(y) + "), " + str + " Len:" + String(strlen(str)));
+	//cmd_port->println("LR: " + String(lr) + ", (" + String(x) + ", " + String(y) + "), " + str + " Len:" + String(strlen(str)));
 	//for(int i=strlen(str)+x; i<DISPLAY_COLS; i++)
 	//	str[i] = 0x20;
 	//str[DISPLAY_COLS] = 0x00;
