@@ -1,9 +1,11 @@
+#include <Arduino.h>
 #include <avr/wdt.h>
 #include "SoftwareSerial.h"
 #include "UserCommand.h"
 #include "EEPROM_Function.h"
 #include "MainProcess.h"
 #include "hmi.h"
+#include "RTCDS1307.h"
 
 #define X0 5
 #define X1 4
@@ -16,6 +18,7 @@
 
 #define USER_COMMAND_DEBUG  1
 
+extern RTCDS1307 rtc;
 extern HardwareSerial *cmd_port;
 extern MainDataStruct maindata;
 extern RuntimeStatus runtimedata;
@@ -39,6 +42,7 @@ CMD g_cmdFunc[] = {
     {"cmdSend",cmdSend},
     {"cmdTest", cmdTest},
     {"GetSetADC", cmdGetSetADC},
+ 
 //    {"8", cmdCarFront},
 //    {"2", cmdCarBack},
 //    {"4", cmdCarLeft},
@@ -49,6 +53,10 @@ CMD g_cmdFunc[] = {
     {"Time", cmdSettingTime},
 	{"?", showHelp}
 };
+String g_inputBuffer0 = "";
+String* g_inputBuffer = NULL;
+String g_cmd = "";
+String g_arg = "";
 
 void cmdSettingTime()
 {
@@ -65,6 +73,9 @@ void cmdSettingTime()
     runtimedata.Workindex[0] = 2;
     runtimedata.UpdateEEPROM = true;
 }
+
+
+
 void cmdCarFront()
 {
 	String arg1;
@@ -160,10 +171,8 @@ void cmdCarError()
     digitalWrite(OutputPin[X5], 1); 
     delay(10);
 }
-String g_inputBuffer0 = "";
-String* g_inputBuffer = NULL;
-String g_cmd = "";
-String g_arg = "";
+
+
 
 bool g_echoOn = true;
 
@@ -536,4 +545,3 @@ void UserCommand_Task(void)
 
   }
 }
-
