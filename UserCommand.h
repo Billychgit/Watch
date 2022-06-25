@@ -31,7 +31,9 @@ void cmdCarStop();
 void cmdCarStart();
 void cmdCarError();
 void cmdSettingTime();
-
+void cmd_Date();
+void cmd_Time();
+void cmd_ShowNowTime();
 void UserCommand_Task(void);
 void UserCommand_Timer(void);
 #endif //_USER_COMMAND_H_
