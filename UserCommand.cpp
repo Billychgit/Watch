@@ -42,7 +42,9 @@ CMD g_cmdFunc[] = {
     {"cmdSend",cmdSend},
     {"cmdTest", cmdTest},
     {"GetSetADC", cmdGetSetADC},
- 
+     {"date", cmd_Date},//設定年月日
+ {"time", cmd_Time},//設定時分秒
+  {"showtime", cmd_ShowNowTime}, 
 //    {"8", cmdCarFront},
 //    {"2", cmdCarBack},
 //    {"4", cmdCarLeft},
@@ -57,6 +59,104 @@ String g_inputBuffer0 = "";
 String* g_inputBuffer = NULL;
 String g_cmd = "";
 String g_arg = "";
+
+void cmd_Date()
+{
+  String arg1, arg2, arg3;
+  int value;
+  bool update = false;
+    rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
+  
+  if (getNextArg(arg1))
+  {
+    value = arg1.toInt();
+        if (value >= 2000)
+        {
+            runtimedata.year = value-2000;  
+        } 
+        else if (value < 100)
+        {
+            runtimedata.year = value; 
+        }    
+    update = true;
+  }
+  if (getNextArg(arg2))
+  {
+    value = arg2.toInt();
+        runtimedata.month = value;
+    update = true;
+  }
+  if (getNextArg(arg3))
+  {
+    value = arg3.toInt();
+        runtimedata.day = value;
+    update = true;
+  }
+  if(update)
+  {
+        rtc.setDate(runtimedata.year,runtimedata.month,runtimedata.day);    //設定 RTC　年月日
+  }
+}
+
+void cmd_Time()
+{
+  String arg1, arg2, arg3;
+  int value;
+  bool update = false;
+    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+  
+  if (getNextArg(arg1))
+  {
+    value = arg1.toInt();
+        runtimedata.hour = value;
+    update = true;
+  }
+  if (getNextArg(arg2))
+  {
+    value = arg2.toInt();
+        runtimedata.minute = value;
+    update = true;
+  }
+  if (getNextArg(arg3))
+  {
+    value = arg3.toInt();
+        runtimedata.second = value;
+    update = true;
+  }
+  if(update)
+  {
+        rtc.setTime(runtimedata.hour,runtimedata.minute,runtimedata.second);   //設定 RTC　時分秒 
+  }
+}
+
+void cmd_ShowNowTime()
+{
+    rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
+    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+
+//    if (!(runtimedata.second % 3)) rtc.setMode(1 - rtc.getMode());
+//    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+    
+/*    DEBUG_PRINT(runtimedata.w[runtimedata.weekday - 1]);
+    DEBUG_PRINT("  ");
+    DEBUG_PRINTDEC(runtimedata.day);
+    DEBUG_PRINT("/");
+    DEBUG_PRINT(runtimedata.m[runtimedata.month - 1]);
+    DEBUG_PRINT("/");
+    DEBUG_PRINTDEC(runtimedata.year + 2000);
+    DEBUG_PRINT("  ");
+    DEBUG_PRINTDEC(runtimedata.hour);
+    DEBUG_PRINT(":");
+    DEBUG_PRINTDEC(runtimedata.minute);
+    DEBUG_PRINT(":");
+    DEBUG_PRINTDEC(runtimedata.second);
+//    DEBUG_PRINT(rtc.getMode() ? (runtimedata.period ? " PM" : " AM") : "");
+    DEBUG_PRINTLN("");*/
+    sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d %02d:%02d:%02d", 
+        runtimedata.year+2000, runtimedata.month, runtimedata.day, 
+        runtimedata.hour, runtimedata.minute, runtimedata.second);
+    cmd_port->println(runtimedata.DS1307_DateTime);
+}
 
 void cmdSettingTime()
 {
