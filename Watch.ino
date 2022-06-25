@@ -44,10 +44,7 @@ void setup() {
   }
 
 void loop() {
-  if(reflash_timer > 1000){
-        reflash_timer = 0;
-        Display(0,8,1,"  ");
-    }
+  
   UserCommand_Task();
   MainProcess_Task();
   
