@@ -18,6 +18,12 @@ uint16_t AddPressTimer = 0;
 uint16_t SubPressTimer = 0;
 
 uint16_t AddSubDelayTimer = 0;
+int ele;
+
+bool button_22_status;
+bool previous_button_22_status = HIGH;//HIGH
+
+
 void MainProcess_ReCheckEEPROMValue()
 {
 	if((maindata.HMI_ID < 0) || (maindata.HMI_ID > 128))
@@ -242,147 +248,115 @@ void MainProcess_Task()  // This is a task.
     {
         case 0 :
             
-              if(digitalRead(22)==HIGH){
+          button_22_status = digitalRead(22);  
+          if (button_22_status == HIGH) {   
+        if(button_22_status!=previous_button_22_status){
+
+          if(Out_Timer>=3000){
+          
             //觸發進入調整模式
             
-            Display(0,0,0,"                ");
+              runtimedata.RunMode= 1;
+            
               }
+              previous_button_22_status = button_22_status;
             break;
-            runtimedata.RunMode=1;
+            
         
         case 1 :
 
-            //選擇不同的項目
+            //用按壓的次數分辨要更改的項目
             int count=1;
+            
             if(digitalRead(23)==HIGH)
-            {
-              count++;
-              if(count==5)count=5;
-            }
+            { 
 
-            Serial.println(count);
+              count++;
+              if(count==6) count=1;
+              ele=count;
+              changeProcess();
+            }
             
             break;
             
         
+        
+
         case 2:
 
-         // 加減
-            
-            break;
-
-        case 3:
-
+          
+          if(digitalRead(22)==HIGH&&digitalRead(23)==HIGH)
           //結束設置
           break;
       }
 }
-int AddTimesMode = 0;
-int SubTimesMode = 0;
-int preAddTimesMode = -1;
-int preSubTimesMode = -1;
-uint8_t preAddBtnState_times = 0;
-uint8_t preSubBtnState_times = 0;
-void SetTimesProcess()
-{    
-    uint8_t addbtn = getInput(24);
-    uint8_t subbtn = getInput(25);
-
-    if((addbtn && !preAddBtnState_times)){
-        FreeTimer = 0;
-
-        
-            if(preAddTimesMode != AddTimesMode)
-            {
-                preAddTimesMode = AddTimesMode;
-                cmd_port->println("AddTimesMode: " + String(preAddTimesMode));
-            }
-            switch(AddTimesMode)
-            {
-                case 0:
-                    if(AddPressTimer >= 2000)
-                    {
-                        AddTimesMode += 10;
-                    }
-                    if(AddSubDelayTimer > 500){ //debug時可修改
-                        maindata.TotalTimes += 1;
-                        AddSubDelayTimer = 0;
-                    }
-                    if(maindata.TotalTimes >= MAX_TOTAL_TIMES) maindata.TotalTimes = MAX_TOTAL_TIMES;
-                    Display(0, 0, 1, "Total times: " + String(maindata.TotalTimes) + "          ");
-                    break;
-                case 10:
-                    maindata.TotalTimes += 1;
-                    if(maindata.TotalTimes >= MAX_TOTAL_TIMES) maindata.TotalTimes = MAX_TOTAL_TIMES;
-                    Display(0, 0, 1, "Total times: " + String(maindata.TotalTimes) + "          ");
-                    break;
-            }
-        }
-    
-    if((subbtn && !preSubBtnState_times)){
-        FreeTimer = 0;
-
-        
-            if(preSubTimesMode != SubTimesMode)
-            {
-                preSubTimesMode = SubTimesMode;
-                cmd_port->println("SubTimesMode: " + String(preSubTimesMode));
-            }
-            switch(SubTimesMode)
-            {
-                case 0:
-                    if(SubPressTimer >= 2000)
-                    {
-                        SubTimesMode += 10;
-                    }
-                    if(AddSubDelayTimer > 500){ //debug時可修改
-                        maindata.TotalTimes -= 1;
-                        AddSubDelayTimer = 0;
-                    }
-                    if(maindata.TotalTimes <= MIN_TOTAL_TIMES) maindata.TotalTimes = MIN_TOTAL_TIMES;
-                    Display(0, 0, 1, "Total times: " + String(maindata.TotalTimes) + "           ");
-                    break;
-                case 10:
-                    maindata.TotalTimes -= 1;
-                    if(maindata.TotalTimes <= MIN_TOTAL_TIMES) maindata.TotalTimes = MIN_TOTAL_TIMES;
-                    Display(0, 0, 1, "Total times: " + String(maindata.TotalTimes) + "           ");
-                    break;
-            }
-        }
     }
-int ele=0;
+}
+
+
 void changeProcess()
 {
   switch (ele)
   {
     
-  case 0 :
-
-  sprintf(runtimedata.DS1307_DateTime, "%04d", 
-        runtimedata.year);
+  case 1 :
+  
+  //調整年
+        
+//加減函數();
 
    break;
 
-    case 1:
-
-    Serial.println("b");
-ele=3;
-    break;
-
- case 2:
-
-    Serial.println("c");
-ele=1;
-    break;
-
-     case 3:
-
-    Serial.println("d");
+    case 2:
+   //調整月
+   
+//加減函數();
 
     break;
+
+ case 3:
+
+//調整日
+   
+
+   //加減函數();
+    
+    break;
+
+     case 4:
+
+
+//調整時
+
+    
+//加減函數();
+
+    break;
+
+
+
+     case 5:
+//調整分
+
+    
+//加減函數();
+
+    break;
+
+    
+     case 6:
+//調整秒
+    
+        
+//加減函數();
+        break;
+
+
+    
     
   }
   }
+    
   
   
   
