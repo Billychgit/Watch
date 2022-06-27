@@ -1,3 +1,5 @@
+#include <LiquidCrystal.h>
+
 #include "Arduino.h"
 #include "Display.h"
 
