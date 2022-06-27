@@ -7,6 +7,7 @@
 #include "EEPROM_Function.h"
 #include <RTClib.h>
 
+
 extern RTCDS1307 rtc;
 extern HardwareSerial *cmd_port;
 MainDataStruct maindata;
@@ -268,16 +269,7 @@ void MainProcess_Task()  // This is a task.
      Display(0,6,1,":");
      
      Display(0,8,1,String(runtimedata.second));
-         /* button_22_status = digitalRead(22);  
-          if (button_22_status == HIGH) {   
-       
           
-            
-            
-              runtimedata.RunMode= 1;
-            
-              }
-              previous_button_22_status = button_22_status;*/
             break;
             
         
@@ -306,21 +298,21 @@ void MainProcess_Task()  // This is a task.
           break;
       }
 }
+
     
 void DisplaySetHour()
 {
 // time setting
- // lcd.clear();
-  DateTime now = RTC.now();
-  if(digitalRead(P2)==HIGH)
-  {
+DateTime now = rtc.now();
+   
+  
     if(hourupg==23)
     {
       hourupg=0;
     }
     else
     {
-      hourupg=hourupg+1;
+      runtimedata.hour=runtimedata.hour+1;
     }
   }
    if(digitalRead(P3)==HIGH)
@@ -458,6 +450,7 @@ void DisplaySetDay()
   //lcd.print(dayupg,DEC);
   //delay(200);
 }
+
 
 
 
