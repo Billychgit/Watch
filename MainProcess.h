@@ -71,4 +71,9 @@ void buzzerPlay(int playMS);
 void MainProcessTimer();
 void SetTimesProcess();
 void changeProcess();
+void DisplaySetYear();
+void DisplaySetMinute();
+void DisplaySetHour();
+void DisplaySetMonth();
+void DisplaySetDay();
 #endif	//_MAIN_PROCESS_H_
