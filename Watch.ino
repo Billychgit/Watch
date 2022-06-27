@@ -1,4 +1,4 @@
-#include <Arduino.h>
+  #include <Arduino.h>
 #include "MainProcess.h"
 #include <Adafruit_MCP23017.h>
 #include "hmi.h"
@@ -45,13 +45,13 @@ void setup() {
 
 void loop() {
   
+  /*if(reflash_timer > 1000){
+        reflash_timer = 0;
+        Display(0,8,1,"  ");*/
   UserCommand_Task();
   MainProcess_Task();
   
-  rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
-    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
-   
-   sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d ", 
+  sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d ", 
         runtimedata.year+2000, runtimedata.month, runtimedata.day);
     cmd_port->println(runtimedata.DS1307_DateTime);
      Display(0,0,0,runtimedata.DS1307_DateTime);
