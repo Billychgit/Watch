@@ -3,27 +3,30 @@
 #include "hmi.h"
 #include "Timer.h"
 #include "Display.h"
+#include "RTCDS1307.h"
+#include "EEPROM_Function.h"
+#include <RTClib.h>
 
-
+extern RTCDS1307 rtc;
 extern HardwareSerial *cmd_port;
 MainDataStruct maindata;
 RuntimeStatus runtimedata;
 DigitalIO digitalio;
 Adafruit_MCP23017 extio[EXTIO_NUM];
 
-uint16_t Out_Timer = 0;
-uint16_t WaitTimer = 0;
-uint16_t FreeTimer = 0;
-uint16_t AddPressTimer = 0;
-uint16_t SubPressTimer = 0;
 
-uint16_t AddSubDelayTimer = 0;
-int ele;
+
 
 bool button_22_status;
 bool previous_button_22_status = HIGH;//HIGH
-
-
+int hourupg;
+int minupg;
+int yearupg;
+int monthupg;
+int dayupg;
+int menu =0;
+int P2=23;
+int P3=24;
 void MainProcess_ReCheckEEPROMValue()
 {
 	if((maindata.HMI_ID < 0) || (maindata.HMI_ID > 128))
@@ -39,12 +42,11 @@ void MainProcess_ReCheckEEPROMValue()
 }
 void MainProcessTimer()
 {
-    if(Out_Timer < 0xFFFF)
-        Out_Timer += TIMER_INTERVAL_MS;
-    if(WaitTimer < 0xFF00)
-        WaitTimer += TIMER_INTERVAL_MS;
-    if(FreeTimer < 0xFF00)
-        FreeTimer += TIMER_INTERVAL_MS;
+  
+    //if(WaitTimer < 0xFF00)
+        //WaitTimer += TIMER_INTERVAL_MS;
+    //if(FreeTimer < 0xFF00)
+        //FreeTimer += TIMER_INTERVAL_MS;
     
         
 }
@@ -242,120 +244,223 @@ uint8_t getInput(uint8_t index)
 
 int n=1;
 int i=1; int o=0;
+
 void MainProcess_Task()  // This is a task.
 {
-    switch(runtimedata.RunMode)
+    if( digitalRead(22)){ menu=menu+1;}
+    
+    switch(menu)
     {
         case 0 :
-            
-          button_22_status = digitalRead(22);  
+              rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
+    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+   
+   sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d ", 
+        runtimedata.year+2000, runtimedata.month, runtimedata.day);
+    cmd_port->println(runtimedata.DS1307_DateTime);
+     Display(0,0,0,runtimedata.DS1307_DateTime);
+     
+     Display(0,0,1,String(runtimedata.hour));
+     
+     Display(0,2,1,":");
+    
+     Display(0,4,1,String(runtimedata.minute));
+     Display(0,6,1,":");
+     
+     Display(0,8,1,String(runtimedata.second));
+         /* button_22_status = digitalRead(22);  
           if (button_22_status == HIGH) {   
-        if(button_22_status!=previous_button_22_status){
-
-          if(Out_Timer>=3000){
+       
           
-            //觸發進入調整模式
+            
             
               runtimedata.RunMode= 1;
             
               }
-              previous_button_22_status = button_22_status;
+              previous_button_22_status = button_22_status;*/
             break;
             
         
-        case 1 :
-
-            //用按壓的次數分辨要更改的項目
-            int count=1;
-            
-            if(digitalRead(23)==HIGH)
-            { 
-
-              count++;
-              if(count==6) count=1;
-              ele=count;
-              changeProcess();
-            }
-            
+        case 1 : 
+            DisplaySetYear();
             break;
             
-        
-        
-
         case 2:
+          DisplaySetMonth();
+          break;
 
-          
-          if(digitalRead(22)==HIGH&&digitalRead(23)==HIGH)
-          //結束設置
+          case 3:
+           DisplaySetDay();
+          break;
+
+           case 4:
+           DisplaySetHour();
+          break;
+
+           case 5:
+           DisplaySetMinute();
+          break;
+
+          case 6 :
+          menu =0;
           break;
       }
 }
+    
+void DisplaySetHour()
+{
+// time setting
+ // lcd.clear();
+  DateTime now = RTC.now();
+  if(digitalRead(P2)==HIGH)
+  {
+    if(hourupg==23)
+    {
+      hourupg=0;
     }
+    else
+    {
+      hourupg=hourupg+1;
+    }
+  }
+   if(digitalRead(P3)==HIGH)
+  {
+    if(hourupg==0)
+    {
+      hourupg=23;
+    }
+    else
+    {
+      hourupg=hourupg-1;
+    }
+  }
+  //lcd.setCursor(0,0);
+  //lcd.print("Set time:");
+  //lcd.setCursor(0,1);
+  //lcd.print(hourupg,DEC);
+  delay(200);
+}
+
+void DisplaySetMinute()
+{
+// Setting the minutes
+  //lcd.clear();
+  if(digitalRead(P2)==HIGH)
+  {
+    if (minupg==59)
+    {
+      minupg=0;
+    }
+    else
+    {
+      minupg=minupg+1;
+    }
+  }
+   if(digitalRead(P3)==HIGH)
+  {
+    if (minupg==0)
+    {
+      minupg=59;
+    }
+    else
+    {
+      minupg=minupg-1;
+    }
+  }
+  //lcd.setCursor(0,0);
+  //lcd.print("Set Minutes:");
+  //lcd.setCursor(0,1);
+  //lcd.print(minupg,DEC);
+  delay(200);
+}
+  
+void DisplaySetYear()
+{
+// setting the year
+  //lcd.clear();
+  if(digitalRead(P2)==HIGH)
+  {    
+    yearupg=yearupg+1;
+  }
+   if(digitalRead(P3)==HIGH)
+  {
+    yearupg=yearupg-1;
+  }
+  //lcd.setCursor(0,0);
+  //lcd.print("Set Year:");
+ // lcd.setCursor(0,1);
+  //lcd.print(yearupg,DEC);
+  delay(200);
+}
+
+void DisplaySetMonth()
+{
+// Setting the month
+  //lcd.clear();
+  if(digitalRead(P2)==HIGH)
+  {
+    if (monthupg==12)
+    {
+      monthupg=1;
+    }
+    else
+    {
+      monthupg=monthupg+1;
+    }
+  }
+   if(digitalRead(P3)==HIGH)
+  {
+    if (monthupg==1)
+    {
+      monthupg=12;
+    }
+    else
+    {
+      monthupg=monthupg-1;
+    }
+  }
+  //lcd.setCursor(0,0);
+  //lcd.print("Set Month:");
+  //lcd.setCursor(0,1);
+  //lcd.print(monthupg,DEC);
+  delay(200);
+}
+
+void DisplaySetDay()
+{
+// Setting the day
+  //lcd.clear();
+  if(digitalRead(P2)==HIGH)
+  {
+    if (dayupg==31)
+    {
+      dayupg=1;
+    }
+    else
+    {
+      dayupg=dayupg+1;
+    }
+  }
+   if(digitalRead(P3)==HIGH)
+  {
+    if (dayupg==1)
+    {
+      dayupg=31;
+    }
+    else
+    {
+      dayupg=dayupg-1;
+    }
+  }
+  //lcd.setCursor(0,0);
+  //lcd.print("Set Day:");
+  //lcd.setCursor(0,1);
+  //lcd.print(dayupg,DEC);
+  //delay(200);
 }
 
 
-void changeProcess()
-{
-  switch (ele)
-  {
-    
-  case 1 :
-  
-  //調整年
-        
-//加減函數();
 
-   break;
-
-    case 2:
-   //調整月
-   
-//加減函數();
-
-    break;
-
- case 3:
-
-//調整日
-   
-
-   //加減函數();
-    
-    break;
-
-     case 4:
-
-
-//調整時
-
-    
-//加減函數();
-
-    break;
-
-
-
-     case 5:
-//調整分
-
-    
-//加減函數();
-
-    break;
-
-    
-     case 6:
-//調整秒
-    
-        
-//加減函數();
-        break;
-
-
-    
-    
-  }
-  }
     
   
   
