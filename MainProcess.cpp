@@ -18,8 +18,7 @@ Adafruit_MCP23017 extio[EXTIO_NUM];
 
 
 
-bool button_22_status;
-bool previous_button_22_status = HIGH;//HIGH
+
 int hourupg;
 int minupg;
 int yearupg;
@@ -305,64 +304,60 @@ void DisplaySetHour()
 // time setting
 DateTime now = rtc.now();
    
-  
-    if(hourupg==23)
+  if(digitalRead(P2)==HIGH){
+    if(runtimedata.hour==23)
     {
-      hourupg=0;
+      runtimedata.hour=0;
     }
     else
     {
       runtimedata.hour=runtimedata.hour+1;
     }
   }
+
+  
    if(digitalRead(P3)==HIGH)
   {
-    if(hourupg==0)
+    if(runtimedata.hour==0)
     {
-      hourupg=23;
+     runtimedata.hour=23;
     }
     else
     {
-      hourupg=hourupg-1;
+      runtimedata.hour=runtimedata.hour-1;
     }
   }
-  //lcd.setCursor(0,0);
-  //lcd.print("Set time:");
-  //lcd.setCursor(0,1);
-  //lcd.print(hourupg,DEC);
+  
   delay(200);
 }
 
 void DisplaySetMinute()
 {
 // Setting the minutes
-  //lcd.clear();
+  
   if(digitalRead(P2)==HIGH)
   {
-    if (minupg==59)
+    if (runtimedata.minute==59)
     {
-      minupg=0;
+      runtimedata.minute=0;
     }
     else
     {
-      minupg=minupg+1;
+      runtimedata.minute=runtimedata.minute+1;
     }
   }
    if(digitalRead(P3)==HIGH)
   {
-    if (minupg==0)
+    if (runtimedata.minute==0)
     {
-      minupg=59;
+      runtimedata.minute=59;
     }
     else
     {
-      minupg=minupg-1;
+      runtimedata.minute=runtimedata.minute-1;
     }
   }
-  //lcd.setCursor(0,0);
-  //lcd.print("Set Minutes:");
-  //lcd.setCursor(0,1);
-  //lcd.print(minupg,DEC);
+  
   delay(200);
 }
   
@@ -372,49 +367,43 @@ void DisplaySetYear()
   //lcd.clear();
   if(digitalRead(P2)==HIGH)
   {    
-    yearupg=yearupg+1;
+    runtimedata.year=runtimedata.year+1;
   }
    if(digitalRead(P3)==HIGH)
   {
-    yearupg=yearupg-1;
+    runtimedata.year=runtimedata.year-1;
   }
-  //lcd.setCursor(0,0);
-  //lcd.print("Set Year:");
- // lcd.setCursor(0,1);
-  //lcd.print(yearupg,DEC);
+  
   delay(200);
 }
 
 void DisplaySetMonth()
 {
 // Setting the month
-  //lcd.clear();
+  
   if(digitalRead(P2)==HIGH)
   {
-    if (monthupg==12)
+    if (runtimedata.month==12)
     {
-      monthupg=1;
+      runtimedata.month=1;
     }
     else
     {
-      monthupg=monthupg+1;
+      runtimedata.month=runtimedata.month+1;
     }
   }
    if(digitalRead(P3)==HIGH)
   {
-    if (monthupg==1)
+    if (runtimedata.month==1)
     {
-      monthupg=12;
+      runtimedata.month=12;
     }
     else
     {
-      monthupg=monthupg-1;
+      runtimedata.month=runtimedata.month-1;
     }
   }
-  //lcd.setCursor(0,0);
-  //lcd.print("Set Month:");
-  //lcd.setCursor(0,1);
-  //lcd.print(monthupg,DEC);
+  
   delay(200);
 }
 
@@ -424,31 +413,28 @@ void DisplaySetDay()
   //lcd.clear();
   if(digitalRead(P2)==HIGH)
   {
-    if (dayupg==31)
+    if (runtimedata.day==31)
     {
-      dayupg=1;
+      runtimedata.day=1;
     }
     else
     {
-      dayupg=dayupg+1;
+      runtimedata.day=runtimedata.day+1;
     }
   }
    if(digitalRead(P3)==HIGH)
   {
-    if (dayupg==1)
+    if (runtimedata.day==1)
     {
-      dayupg=31;
+      runtimedata.day=31;
     }
     else
     {
-      dayupg=dayupg-1;
+      runtimedata.day=runtimedata.day-1;
     }
   }
-  //lcd.setCursor(0,0);
-  //lcd.print("Set Day:");
-  //lcd.setCursor(0,1);
-  //lcd.print(dayupg,DEC);
-  //delay(200);
+ 
+  delay(200);
 }
 
 
