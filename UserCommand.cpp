@@ -7,26 +7,17 @@
 #include "hmi.h"
 #include "RTCDS1307.h"
 
-#define X0 5
-#define X1 4
-#define X2 3
-#define X3 2
-#define X4 1
-#define X5 0
-#define pwm1 4
-#define pwm2 6
-
 #define USER_COMMAND_DEBUG  1
-
 extern RTCDS1307 rtc;
 extern HardwareSerial *cmd_port;
 extern MainDataStruct maindata;
 extern RuntimeStatus runtimedata;
 extern DigitalIO digitalio;
 
-
 CMD g_cmdFunc[] = {
-//在這新增function name 以及所呼叫的function
+    {"SD", cmd_UpdateEEPROM},
+	{"CD", cmd_ClearEEPROM},
+	{"RD", cmd_Maindata},
 	{"adc", getAdc},
 	{"getgpio", getGpio},
 	{"setgpio", setGpio},
@@ -35,24 +26,11 @@ CMD g_cmdFunc[] = {
 	{"ver", cmd_CodeVer},
 	{"echoon", echoOn},
 	{"echooff", echoOff},
-	{"reset", resetArduino},
-	{"getmicros", getMicros},
 	{"out", cmdOutput},
 	{"in", cmdInput},
-    {"cmdSend",cmdSend},
-    {"cmdTest", cmdTest},
-    {"GetSetADC", cmdGetSetADC},
-     {"date", cmd_Date},//設定年月日
- {"time", cmd_Time},//設定時分秒
-  {"showtime", cmd_ShowNowTime}, 
-//    {"8", cmdCarFront},
-//    {"2", cmdCarBack},
-//    {"4", cmdCarLeft},
-//    {"6", cmdCarRight},
-//    {"0", cmdCarStop},
-//    {"5", cmdCarStart},
-//    {"CarError", cmdCarError},
-    {"Time", cmdSettingTime},
+	{"showtime", cmd_ShowNowTime},   
+    {"date", cmd_Date},//設定年月日
+	{"time", cmd_Time},//設定時分秒
 	{"?", showHelp}
 };
 String g_inputBuffer0 = "";
@@ -60,223 +38,7 @@ String* g_inputBuffer = NULL;
 String g_cmd = "";
 String g_arg = "";
 
-void cmd_Date()
-{
-  String arg1, arg2, arg3;
-  int value;
-  bool update = false;
-    rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
-  
-  if (getNextArg(arg1))
-  {
-    value = arg1.toInt();
-        if (value >= 2000)
-        {
-            runtimedata.year = value-2000;  
-        } 
-        else if (value < 100)
-        {
-            runtimedata.year = value; 
-        }    
-    update = true;
-  }
-  if (getNextArg(arg2))
-  {
-    value = arg2.toInt();
-        runtimedata.month = value;
-    update = true;
-  }
-  if (getNextArg(arg3))
-  {
-    value = arg3.toInt();
-        runtimedata.day = value;
-    update = true;
-  }
-  if(update)
-  {
-        rtc.setDate(runtimedata.year,runtimedata.month,runtimedata.day);    //設定 RTC　年月日
-  }
-}
-
-void cmd_Time()
-{
-  String arg1, arg2, arg3;
-  int value;
-  bool update = false;
-    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
-  
-  if (getNextArg(arg1))
-  {
-    value = arg1.toInt();
-        runtimedata.hour = value;
-    update = true;
-  }
-  if (getNextArg(arg2))
-  {
-    value = arg2.toInt();
-        runtimedata.minute = value;
-    update = true;
-  }
-  if (getNextArg(arg3))
-  {
-    value = arg3.toInt();
-        runtimedata.second = value;
-    update = true;
-  }
-  if(update)
-  {
-        rtc.setTime(runtimedata.hour,runtimedata.minute,runtimedata.second);   //設定 RTC　時分秒 
-  }
-}
-
-void cmd_ShowNowTime()
-{
-    rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
-    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
-
-//    if (!(runtimedata.second % 3)) rtc.setMode(1 - rtc.getMode());
-//    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
-    
-/*    DEBUG_PRINT(runtimedata.w[runtimedata.weekday - 1]);
-    DEBUG_PRINT("  ");
-    DEBUG_PRINTDEC(runtimedata.day);
-    DEBUG_PRINT("/");
-    DEBUG_PRINT(runtimedata.m[runtimedata.month - 1]);
-    DEBUG_PRINT("/");
-    DEBUG_PRINTDEC(runtimedata.year + 2000);
-    DEBUG_PRINT("  ");
-    DEBUG_PRINTDEC(runtimedata.hour);
-    DEBUG_PRINT(":");
-    DEBUG_PRINTDEC(runtimedata.minute);
-    DEBUG_PRINT(":");
-    DEBUG_PRINTDEC(runtimedata.second);
-//    DEBUG_PRINT(rtc.getMode() ? (runtimedata.period ? " PM" : " AM") : "");
-    DEBUG_PRINTLN("");*/
-    sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d %02d:%02d:%02d", 
-        runtimedata.year+2000, runtimedata.month, runtimedata.day, 
-        runtimedata.hour, runtimedata.minute, runtimedata.second);
-    cmd_port->println(runtimedata.DS1307_DateTime);
-}
-
-void cmdSettingTime()
-{
-	String arg1;
-	int value;
-	if(!getNextArg(arg1))
-	{
-	  cmd_port->println("No parameter 1");
-	  return;
-	}
-    value = arg1.toInt();
-    maindata.SettingTimer = value;
-    cmd_port->println("SettingTime: " + String(maindata.SettingTimer));
-    runtimedata.Workindex[0] = 2;
-    runtimedata.UpdateEEPROM = true;
-}
-
-
-
-void cmdCarFront()
-{
-	String arg1;
-	int value;
-	if(!getNextArg(arg1))
-	{
-	  cmd_port->println("No parameter 1");
-	  return;
-	}
-    value = arg1.toInt();
-    digitalWrite(OutputPin[X1], 1);
-    digitalWrite(OutputPin[X2], 1);
-    digitalWrite(OutputPin[X3], 0);
-    digitalWrite(OutputPin[X4], 1);
-    analogWrite(ADC_PWMPin[pwm1],value);
-    analogWrite(ADC_PWMPin[pwm2],value);
-}
-void cmdCarBack()
-{
-	String arg1;
-	int value;
-	if(!getNextArg(arg1))
-	{
-	  cmd_port->println("No parameter 1");
-	  return;
-	}
-    value = arg1.toInt();
-    digitalWrite(OutputPin[X1], 1);
-    digitalWrite(OutputPin[X2], 1);
-    digitalWrite(OutputPin[X3], 1);
-    digitalWrite(OutputPin[X4], 0);
-    analogWrite(ADC_PWMPin[pwm1],value);
-    analogWrite(ADC_PWMPin[pwm2],value);
-}
-
-void cmdCarLeft()
-{
-	String arg1;
-	int value;
-	if(!getNextArg(arg1))
-	{
-	  cmd_port->println("No parameter 1");
-	  return;
-	}
-    value = arg1.toInt();
-    digitalWrite(OutputPin[X1], 1);
-    digitalWrite(OutputPin[X2], 1);
-    digitalWrite(OutputPin[X3], 1);
-    digitalWrite(OutputPin[X4], 1);
-    analogWrite(ADC_PWMPin[pwm1],value);
-    analogWrite(ADC_PWMPin[pwm2],value);
-}
-void cmdCarRight()
-{
-	String arg1;
-	int value;
-	if(!getNextArg(arg1))
-	{
-	  cmd_port->println("No parameter 1");
-	  return;
-	}
-    value = arg1.toInt();
-    digitalWrite(OutputPin[X1], 1);
-    digitalWrite(OutputPin[X2], 1);
-    digitalWrite(OutputPin[X3], 0);
-    digitalWrite(OutputPin[X4], 0);
-    analogWrite(ADC_PWMPin[pwm1],value);
-    analogWrite(ADC_PWMPin[pwm2],value);
-}
-void cmdCarStop()
-{
-    digitalWrite(OutputPin[X1], 0);
-    digitalWrite(OutputPin[X2], 0);
-    digitalWrite(OutputPin[X3], 1);
-    digitalWrite(OutputPin[X4], 0);
-    analogWrite(ADC_PWMPin[pwm1],0);
-    analogWrite(ADC_PWMPin[pwm2],0);
-}
-
-void cmdCarStart()
-{
-    digitalWrite(OutputPin[X0], 1);    
-    delay(10);
-}
-
-void cmdCarError()
-{
-    
-    digitalWrite(OutputPin[X5], 1); 
-    delay(10);
-    digitalWrite(OutputPin[X5], 0); 
-    delay(10);
-    digitalWrite(OutputPin[X5], 1); 
-    delay(10);
-}
-
-
-
 bool g_echoOn = true;
-
-uint32_t targetcnt = 0;
 
 bool getNextArg(String &arg)
 {
@@ -293,6 +55,115 @@ bool getNextArg(String &arg)
 		g_arg = g_arg.substring(g_arg.indexOf(" ") + 1);
 	}
 	return true;
+}
+
+void cmd_Maindata(void)
+{
+	READ_EEPROM();
+}
+void cmd_UpdateEEPROM(void)
+{
+	runtimedata.UpdateEEPROM = true;
+}
+void cmd_ClearEEPROM(void)
+{
+	Clear_EEPROM();
+}
+void cmd_Date()
+{
+	String arg1, arg2, arg3;
+	int value;
+	bool update = false;
+    rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
+	
+	if (getNextArg(arg1))
+	{
+		value = arg1.toInt();
+        if (value >= 2000)
+        {
+            runtimedata.year = value-2000;  
+        } 
+        else if (value < 100)
+        {
+            runtimedata.year = value; 
+        }    
+		update = true;
+	}
+	if (getNextArg(arg2))
+	{
+		value = arg2.toInt();
+        runtimedata.month = value;
+		update = true;
+	}
+	if (getNextArg(arg3))
+	{
+		value = arg3.toInt();
+        runtimedata.day = value;
+		update = true;
+	}
+	if(update)
+	{
+        rtc.setDate(runtimedata.year,runtimedata.month,runtimedata.day);    //設定 RTC　年月日
+	}
+}
+void cmd_Time()
+{
+	String arg1, arg2, arg3;
+	int value;
+	bool update = false;
+    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+	
+	if (getNextArg(arg1))
+	{
+		value = arg1.toInt();
+        runtimedata.hour = value;
+		update = true;
+	}
+	if (getNextArg(arg2))
+	{
+		value = arg2.toInt();
+        runtimedata.minute = value;
+		update = true;
+	}
+	if (getNextArg(arg3))
+	{
+		value = arg3.toInt();
+        runtimedata.second = value;
+		update = true;
+	}
+	if(update)
+	{
+        rtc.setTime(runtimedata.hour,runtimedata.minute,runtimedata.second);   //設定 RTC　時分秒 
+	}
+}
+
+void cmd_ShowNowTime()
+{
+    rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
+    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+
+//    if (!(runtimedata.second % 3)) rtc.setMode(1 - rtc.getMode());
+//    rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
+    
+    DEBUG_PRINT(runtimedata.w[runtimedata.weekday - 1]);
+    DEBUG_PRINT("  ");
+    DEBUG_PRINTDEC(runtimedata.day);
+    DEBUG_PRINT("/");
+    DEBUG_PRINT(runtimedata.m[runtimedata.month - 1]);
+    DEBUG_PRINT("/");
+    DEBUG_PRINTDEC(runtimedata.year + 2000);
+    DEBUG_PRINT("  ");
+    DEBUG_PRINTDEC(runtimedata.hour);
+    DEBUG_PRINT(":");
+    DEBUG_PRINTDEC(runtimedata.minute);
+    DEBUG_PRINT(":");
+    DEBUG_PRINTDEC(runtimedata.second);
+//    DEBUG_PRINT(rtc.getMode() ? (runtimedata.period ? " PM" : " AM") : "");
+    DEBUG_PRINTLN("");
+    sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d %02d:%02d:%02d", 
+        runtimedata.year+2000, runtimedata.month, runtimedata.day, 
+        runtimedata.hour, runtimedata.minute, runtimedata.second);
+    cmd_port->println(runtimedata.DS1307_DateTime);
 }
 
 void resetArduino(void)
@@ -468,68 +339,6 @@ void cmdInput(void)
 	cmd_port->println("Sensor: " + String(getInput(pinindex)));
 }
 
-void cmdTest(void)
-{
-	String arg1;
-    long value;
-
-	getNextArg(arg1);
-	if( (arg1.length()==0))
-	{
-		cmd_port->println("Please input enough parameters");
-		return;
-	}
-	value = arg1.toInt();
-	Serial3.println("value: " + String(value));
-}
-
-void cmdSend(void)
-{
-	String arg1;
-    long value;
-
-	getNextArg(arg1);
-	if( (arg1.length()==0))
-	{
-		cmd_port->println("Please input enough parameters");
-		return;
-	}
-	value = arg1.toInt();
-    Serial1.println("cmdTest");
-	Serial1.println("cmdTest " + String(value));
-}
-
-void cmdGetSetADC()
-{
-	String arg1, arg2;
-	int Pin,value;
-	if(!getNextArg(arg1))
-	{
-	  cmd_port->println("No parameter 1");
-	  return;
-	}
-    Pin = arg1.toInt();
-	if(!getNextArg(arg2))
-	{
-	    cmd_port->println("No parameter 2");
-        value = analogRead(ADC_PWMPin[Pin]);
-        cmd_port->println("Pin " + String(Pin) + ": " + String(value));
-        return;
-	}
-	value = arg2.toInt();
-    if(Pin%2 == 0){
-        pinMode(ADC_PWMPin[Pin], OUTPUT);
-        analogWrite(ADC_PWMPin[Pin], value);
-        cmd_port->println("PWM value: " + String(Pin) + String(value));
-    }
-    else
-    {
-        pinMode(ADC_PWMPin[Pin], OUTPUT);
-        analogWrite(ADC_PWMPin[Pin], value);
-        cmd_port->println("ADC value: " + String(Pin) + String(value));
-    }
-}
-
 
 uint8_t UserCommWorkindex = 0;
 
@@ -565,7 +374,7 @@ void UserCommand_Task(void)
       {
 
 //      cmd_port->println("cmd_port datalen: " + String(incomingBytes));
-      Serial3.println("cmd_port datalen: " + String(incomingBytes));
+//      Serial3.println("cmd_port datalen: " + String(incomingBytes));
       for ( i = 0; i < incomingBytes; i++ )
       {
         ret = cmd_port->read();
@@ -587,7 +396,7 @@ void UserCommand_Task(void)
           if (g_echoOn)
           {
           data[0] = 0x08;
-          cmd_port->write(data);
+//          cmd_port->write(data);
           }
         }
         }
@@ -623,20 +432,20 @@ void UserCommand_Task(void)
         if (g_cmd.equalsIgnoreCase(g_cmdFunc[i].cmd))
         {
           g_cmdFunc[i].func();
-          cmd_port->print("ARDUINO>");
+//          cmd_port->print("ARDUINO>");
           break;
         }
         else if (i == (sizeof(g_cmdFunc) / sizeof(CMD) - 1))
         {
-          cmd_port->println("bad command !!");
-          cmd_port->print("ARDUINO>");
+//          cmd_port->println("bad command !!");
+//          cmd_port->print("ARDUINO>");
         }
         }
         *g_inputBuffer = "";
       }
       else
       {
-        cmd_port->print("ARDUINO>");
+//        cmd_port->print("ARDUINO>");
       }
       UserCommWorkindex = 0;
       break;
