@@ -12,36 +12,31 @@ void READ_EEPROM()
 { 
 // 讀取EEPROM，回傳值count代表總共寫入幾個byte 
  
-  int count = EEPROM_readAnything(0, maindata);
-  #if EEPROM_DEBUG
-  	if(cmd_port != NULL)
-	{
-  		cmd_port->println("Read EEPROM.");
-  		cmd_port->print("Vendor: ");
-  		cmd_port->println(maindata.Vendor);
-  	}
-  #endif
+    int count = EEPROM_readAnything(0, maindata);
+#if EEPROM_DEBUG
+    if(cmd_port != NULL)
+    {
+        cmd_port->println("Read EEPROM.");
+        cmd_port->print("Vendor: ");
+        cmd_port->println(maindata.Vendor);
+    }
+#endif
   
-  if (String(maindata.Vendor) != VENDOR)  //未定義 時寫入初值 NNNNNNNNNNNN  
-  {
-     Clear_EEPROM();
-  }
-  
-//  Serial.println(KEEP_DATA.Vendor);
-//  Serial.println(KEEP_DATA.RS485_ID);
-
-//  Serial.print(count);
-//  Serial.println(" bytes read.");
-  
-
+    if (String(maindata.Vendor) != VENDOR)  //未定義 時寫入初值 NNNNNNNNNNNN  
+    {
+        Clear_EEPROM();
+    }
+    DEBUG_PRINT(F("CheckVersion= "));
+    DEBUG_PRINTHEX(maindata.CheckVersion); DEBUG_PRINTLN("");
+    DEBUG_PRINTLN("");
 }
 
 void WRITE_EEPROM()
 {  
   // 寫入EEPROM，回傳值count代表總共寫入幾個byte 
   int count = EEPROM_writeAnything(0, maindata);
-//  Serial.print(count);
-//  Serial.println(" bytes written.");
+  Serial.print(count);
+  Serial.println(" bytes written.");
 //  Serial.println("---------------");
   
 //	if(cmd_port != NULL) 
@@ -59,10 +54,9 @@ void   Clear_EEPROM()
   	}
 #endif
 	strcpy(maindata.Vendor, VENDOR); 
-	
-// 寫入EEPROM，回傳值count代表總共寫入幾個byte 
-   int   count = EEPROM_writeAnything(0, maindata);
-     
+    
+//  寫入EEPROM，回傳值count代表總共寫入幾個byte 
+    int   count = EEPROM_writeAnything(0, maindata);
 }
 
 template <class T> int EEPROM_writeAnything(int address, const T &data)
