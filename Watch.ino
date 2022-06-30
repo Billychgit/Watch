@@ -10,10 +10,10 @@
 #include "Display.h"
 #include <Wire.h>
 
-
+HardwareSerial *cmd_port;
 extern MainDataStruct maindata;
 extern RuntimeStatus runtimedata;
-HardwareSerial *cmd_port;
+
 
 
 RTCDS1307 rtc(0x68);
