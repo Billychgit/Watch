@@ -8,6 +8,9 @@ typedef struct __CMD {
   void (*func)(void);
 } CMD, *PCMD;
 
+void cmd_Maindata(void);
+void cmd_UpdateEEPROM(void);
+void cmd_ClearEEPROM(void);
 void resetArduino(void);
 void getMicros(void);
 void getAdc(void);
@@ -20,20 +23,10 @@ void showHelp(void);
 bool getNextArg(String &arg);
 void cmdOutput(void);
 void cmdInput(void);
-void cmdTest(void);
-void cmdSend(void);
-void cmdGetSetADC();
-void cmdCarFront();
-void cmdCarBack();
-void cmdCarLeft();
-void cmdCarRight();
-void cmdCarStop();
-void cmdCarStart();
-void cmdCarError();
-void cmdSettingTime();
 void cmd_Date();
 void cmd_Time();
 void cmd_ShowNowTime();
+
 void UserCommand_Task(void);
 void UserCommand_Timer(void);
 #endif //_USER_COMMAND_H_
