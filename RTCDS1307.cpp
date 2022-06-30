@@ -45,6 +45,8 @@ bool RTCDS1307::getTime(uint8_t &h, uint8_t &m, uint8_t &s, bool &period) {
     return true;
   }
 }
+//bool RTCDS1307::getTime(uint8_t &s)
+//{return getTime(s) ;}
 
 bool RTCDS1307::isLeapYear(uint16_t Y) {
   return !((Y % 4) * (!(Y % 100) + (Y % 400)));
