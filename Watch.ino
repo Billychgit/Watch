@@ -82,10 +82,12 @@ void loop()
     }
 }
 void coop(){
-  runtimedata.hour=runtimedata.nh;
+  /*runtimedata.hour=runtimedata.nh;
     runtimedata.minute=runtimedata.nin;
     runtimedata.year=runtimedata.ny;
-    runtimedata.month=runtimedata.nm;
+    runtimedata.month=runtimedata.nm;*/
+    rtc.setDate(runtimedata.ny,runtimedata.nm, runtimedata.nd);   //設定 RTC　年月日
+    rtc.setTime(runtimedata.nh,runtimedata.nin, 00);   //設定 RTC　時分秒 
   rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
     rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
      sprintf(runtimedata.DS1307_DateTime, "%04d/%02d/%02d ", 
