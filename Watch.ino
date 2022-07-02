@@ -13,7 +13,7 @@
 HardwareSerial *cmd_port;
 extern MainDataStruct maindata;
 extern RuntimeStatus runtimedata;
-
+int menu=0;
 
 
 RTCDS1307 rtc(0x68);
@@ -41,7 +41,7 @@ void setup()
     //rtc.setTime(9,32, 00);   //設定 RTC　時分秒 
     rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
     rtc.getTime(runtimedata.hour, runtimedata.minute, runtimedata.second, runtimedata.period);
-     
+    
 
     pinMode(BUZZ, OUTPUT);
     TimerInit(1, 10000);
@@ -56,7 +56,15 @@ void loop()
         Display(0,8,1,"  ");
     }
   
-       
+       if(digitalRead(22)==HIGH&& test_timer>3000)
+       {
+        
+        if(digitalRead(23))
+            {
+                menu=menu+1;
+            }
+        
+        }
   
     UserCommand_Task();
     MainProcess_Task();/*%02d:%02d:%02d*/
@@ -67,10 +75,7 @@ void loop()
     //circal();
   
     
-    DisplaySetHour();
-    DisplaySetMinute();
-    DisplaySetYear();
-    DisplaySetMonth();
+    chang();
     
     coop();
     
@@ -80,6 +85,28 @@ void loop()
         runtimedata.UpdateEEPROM = false;
         WRITE_EEPROM();
     }
+}
+void chang()
+{
+  
+  switch(menu)
+  {
+    case 1 :
+    DisplaySetHour();
+    break;
+
+    case 2:
+    DisplaySetMinute();
+    break;
+
+    case 3:
+    DisplaySetYear();
+    break;
+
+    case 4:
+    DisplaySetMonth();
+    break;
+  }
 }
 void coop(){
   /*runtimedata.hour=runtimedata.nh;
