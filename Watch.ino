@@ -73,11 +73,7 @@ void loop()
         Display(0,8,1,"  ");
     }
   
-        buzzerPlay(500);
-        if(digitalRead(23))
-            {
-                menu=menu+1;
-            }
+        
         
        
   
@@ -109,7 +105,8 @@ void updateCounter() {
 
       if (holdTime >= 3000) {
           Serial.println("Button is held for more than a second"); 
-          
+          buzzerPlay(500);
+          chang();
       }
 }
   
@@ -148,7 +145,10 @@ void updateState() {
 
 void chang()
 {
-  
+  if(digitalRead(23))
+            {
+                menu=menu+1;
+            }
   switch(menu)
   {
     case 1 :
