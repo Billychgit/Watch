@@ -14,7 +14,12 @@ HardwareSerial *cmd_port;
 extern MainDataStruct maindata;
 extern RuntimeStatus runtimedata;
 int menu=0;
-
+int buttonState = 0;     // current state of the button
+int lastButtonState = 0; // previous state of the button
+int startPressed = 0;    // the moment the button was pressed
+int endPressed = 0;      // the moment the button was released
+int holdTime = 0;        // how long the button was hold
+int idleTime = 0;        // how long the button was idle
 
 RTCDS1307 rtc(0x68);
 
@@ -51,14 +56,26 @@ void setup()
 
 void loop()
 {   
+
+  buttonState = digitalRead(22); // read the button input
+
+  if (buttonState != lastButtonState) { // button state changed
+     updateState();
+  } else {
+     updateCounter(); // button state not changed. It runs in a loop.
+  }
+
+  lastButtonState = buttonState;
+
+       
     if(reflash_timer > 1000){
         reflash_timer = 0;
         Display(0,8,1,"  ");
     }
   
-       if(digitalRead(22)==HIGH&& test_timer>3000)
+       if(digitalRead(22)==HIGH && test_timer>3000)
        {
-        
+        buzzerPlay(500);
         if(digitalRead(23))
             {
                 menu=menu+1;
@@ -67,7 +84,7 @@ void loop()
         }
   
     UserCommand_Task();
-    MainProcess_Task();/*%02d:%02d:%02d*/
+    MainProcess_Task();/*%02d:%02d:%02d*/ 
     //rtc.getDate(runtimedata.ny, runtimedata.nm, runtimedata.nd, runtimedata.weekday);
     //rtc.getTime(runtimedata.nh, runtimedata.nin, runtimedata.second, runtimedata.period);
      //rtc.getDate(runtimedata.year, runtimedata.month, runtimedata.day, runtimedata.weekday);
@@ -86,6 +103,56 @@ void loop()
         WRITE_EEPROM();
     }
 }
+
+void updateCounter() {
+  // the button is still pressed
+  if (buttonState == HIGH) {
+      holdTime = millis() - startPressed;
+
+      if (holdTime >= 1000) {
+          Serial.println("Button is held for more than a second"); 
+      }
+
+  // the button is still released
+  } else {
+      idleTime = millis() - endPressed;
+
+      if (idleTime >= 1000) {
+          Serial.println("Button is released for more than a second");  
+      }
+  }
+}
+
+void updateState() {
+  // the button has been just pressed
+  if (buttonState == HIGH) {
+      startPressed = millis();
+      idleTime = startPressed - endPressed;
+
+      if (idleTime >= 500 && idleTime < 1000) {
+          Serial.println("Button was idle for half a second");
+      }
+
+      if (idleTime >= 1000) {
+          Serial.println("Button was idle for one second or more"); 
+      }
+
+  // the button has been just released
+  } else {
+      endPressed = millis();
+      holdTime = endPressed - startPressed;
+
+      if (holdTime >= 500 && holdTime < 1000) {
+          Serial.println("Button was held for half a second"); 
+      }
+
+      if (holdTime >= 1000) {
+          Serial.println("Button was held for one second or more"); 
+      }
+
+  }
+}
+
 void chang()
 {
   
