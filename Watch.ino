@@ -86,7 +86,7 @@ void loop()
     //circal();
   
     
-    chang();
+    
     
     coop();
     
