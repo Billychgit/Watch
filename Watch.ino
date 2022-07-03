@@ -73,15 +73,13 @@ void loop()
         Display(0,8,1,"  ");
     }
   
-       if(digitalRead(22)==HIGH && test_timer>3000)
-       {
         buzzerPlay(500);
         if(digitalRead(23))
             {
                 menu=menu+1;
             }
         
-        }
+       
   
     UserCommand_Task();
     MainProcess_Task();/*%02d:%02d:%02d*/ 
@@ -109,18 +107,13 @@ void updateCounter() {
   if (buttonState == HIGH) {
       holdTime = millis() - startPressed;
 
-      if (holdTime >= 1000) {
+      if (holdTime >= 3000) {
           Serial.println("Button is held for more than a second"); 
+          
       }
-
-  // the button is still released
-  } else {
-      idleTime = millis() - endPressed;
-
-      if (idleTime >= 1000) {
-          Serial.println("Button is released for more than a second");  
-      }
-  }
+}
+  
+  
 }
 
 void updateState() {
