@@ -148,6 +148,8 @@ void chang()
   if(digitalRead(23))
             {
                 menu=menu+1;
+                Display(0,10,1,String(menu));
+                if(menu==5){menu=0;}
             }
   switch(menu)
   {
@@ -196,7 +198,7 @@ void DisplaySetHour()
 {
 // 
    
-  if(digitalRead(22)==HIGH){
+  if(digitalRead(24)==HIGH){
     if(runtimedata.hour==23)
     { 
       Display(0,0,1,"  ");
@@ -210,7 +212,7 @@ void DisplaySetHour()
   }
 
   
-   if(digitalRead(23)==HIGH)
+   if(digitalRead(25)==HIGH)
   {
     if(runtimedata.hour==0)
     {Display(0,0,1,"  ");
@@ -265,13 +267,13 @@ void DisplaySetYear()
 {
 // setting the year
   //lcd.clear();
-  if(digitalRead(26)==HIGH)
+  if(digitalRead(24)==HIGH)
   {    
     runtimedata.year++;
     runtimedata.ny=runtimedata.year;
     Serial.print("++");
   }
-   if(digitalRead(27)==HIGH)
+   if(digitalRead(25)==HIGH)
   {
     runtimedata.year--;
     Serial.print("--");
@@ -285,7 +287,7 @@ void DisplaySetMonth()
 {
 // Setting the month
   
-  if(digitalRead(28)==HIGH)
+  if(digitalRead(24)==HIGH)
   {
     if (runtimedata.month==12)
     {
@@ -298,7 +300,7 @@ void DisplaySetMonth()
       runtimedata.nm=runtimedata.month;
     }
   }
-   if(digitalRead(29)==HIGH)
+   if(digitalRead(25)==HIGH)
   {
     if (runtimedata.month==1)
     {
@@ -319,7 +321,7 @@ void DisplaySetDay()
 {
 // Setting the day
   
-  if(digitalRead(30)==HIGH)
+  if(digitalRead(24)==HIGH)
   {
     if (runtimedata.day==31)
     { 
@@ -331,7 +333,7 @@ void DisplaySetDay()
       
     }
   }
-   if(digitalRead(31)==HIGH)
+   if(digitalRead(25)==HIGH)
   {
     if (runtimedata.day==1)
     {
